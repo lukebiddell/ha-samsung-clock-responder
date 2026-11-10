@@ -14,8 +14,10 @@ import datetime
 import http.server
 import json
 import sys
+import urllib.request
 
 OPTIONS_PATH = "/data/options.json"
+HEALTHCHECK_PATH = "/healthcheck"
 
 
 def load_options(path=OPTIONS_PATH):
@@ -34,7 +36,7 @@ class ConnectTestHandler(http.server.BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length") or 0)
         if length:
             self.rfile.read(length)
-        if self.log_requests:
+        if self.log_requests and self.path != HEALTHCHECK_PATH:
             now = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
             print(
                 f"{now} {self.client_address[0]} {self.requestline!r} "
@@ -59,7 +61,18 @@ def make_server(host="0.0.0.0", port=80, log_requests=True):
     return http.server.ThreadingHTTPServer((host, port), handler)
 
 
-def main():
+def healthcheck(port=80):
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}{HEALTHCHECK_PATH}", timeout=5) as r:
+            return 0 if r.status == 200 else 1
+    except OSError:
+        return 1
+
+
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv == ["--healthcheck"]:
+        return healthcheck()
     options = load_options()
     server = make_server(log_requests=bool(options.get("log_requests", True)))
     print(f"Samsung Clock Responder listening on port {server.server_port}", flush=True)

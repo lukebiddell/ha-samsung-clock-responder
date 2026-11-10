@@ -85,6 +85,19 @@ class ResponderTest(unittest.TestCase):
         self.assertIn("127.0.0.1 'GET /api/v1/connect-test HTTP/1.1'", line)
         self.assertIn("Host='info.cspserver.net'", line)
 
+    def test_healthcheck_is_not_logged(self):
+        port = self.start(log_requests=True)
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(responder.healthcheck(port), 0)
+        self.assertEqual(out.getvalue(), "")
+
+    def test_healthcheck_fails_when_nothing_listens(self):
+        with socket.socket() as s:
+            s.bind(("127.0.0.1", 0))
+            free_port = s.getsockname()[1]
+        self.assertEqual(responder.healthcheck(free_port), 1)
+
     def test_silent_when_logging_disabled(self):
         port = self.start(log_requests=False)
         out = io.StringIO()

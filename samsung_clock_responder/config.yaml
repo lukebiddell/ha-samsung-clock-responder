@@ -9,9 +9,7 @@ arch:
   - aarch64
   - amd64
 startup: services
-boot: auto
 init: false
-watchdog: tcp://[HOST]:[PORT:80]
 ports:
   80/tcp: 80
 options:

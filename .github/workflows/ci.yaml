@@ -63,4 +63,5 @@ jobs:
           done
           curl -si -H 'Host: info.cspserver.net' http://127.0.0.1:8080/api/v1/connect-test | tee response.txt
           grep -q '^HTTP/1.1 200 OK' response.txt
+          docker exec responder python3 /usr/bin/samsung_clock_responder.py --healthcheck
           docker logs responder

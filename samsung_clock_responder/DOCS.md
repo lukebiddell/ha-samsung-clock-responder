@@ -115,6 +115,7 @@ If you change it, use the same port as the NAT rule's target.
   hour, in 0.1 kWh steps. On a time-of-use tariff, cost lands in the slot
   after the energy was used.
 - **Keep the add-on running.** The appliance's clock resets on power loss.
-  The add-on starts on boot and has the watchdog on by default.
+  The add-on starts on boot and has a health check; turn on **Watchdog** on
+  the add-on's Info tab so Home Assistant restarts it if it stops responding.
 - **What gets answered.** Every request gets the same empty `200` reply,
   whatever its path.
