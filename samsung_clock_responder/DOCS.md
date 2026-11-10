@@ -107,10 +107,14 @@ If you change it, use the same port as the NAT rule's target.
 
 ## Things to know
 
-- **Energy comes back as one jump.** The appliance keeps counting while its
-  clock is wrong, and reports the whole total at the next update. Energy
-  statistics and cost trackers will show all of it in one hour. Adjust them
-  in **Developer tools → Statistics** if needed.
+- **A one-off catch-up when you first set it up.** The appliance keeps
+  counting while its clock is wrong, but doesn't report. When the clock is
+  first set, everything used since the clock was lost arrives in one hourly
+  update, so energy statistics and cost trackers show it all in that hour.
+  Adjust them in **Developer tools → Statistics** if needed. After that, as
+  long as the add-on is running, the clock is set within a minute of each
+  power-up and no backlog builds up. A jump only happens again if the
+  appliance runs while the add-on or the NAT rule is down.
 - **Hourly granularity.** The appliance updates cumulative energy on the
   hour, in 0.1 kWh steps. On a time-of-use tariff, cost lands in the slot
   after the energy was used.
