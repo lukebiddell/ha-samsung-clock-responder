@@ -1,0 +1,10 @@
+configuration:
+  log_requests:
+    name: Log requests
+    description: >-
+      Write one line to the add-on log for every request received. Useful to
+      confirm an appliance is reaching the responder.
+network:
+  80/tcp: >-
+    HTTP port for the connectivity check. Point your router's destination-NAT
+    rule at this port.

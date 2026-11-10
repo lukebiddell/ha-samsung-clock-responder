@@ -1,0 +1,20 @@
+name: Samsung Clock Responder
+version: "1.0.0"
+slug: samsung_clock_responder
+description: >-
+  Answers Samsung appliances' connectivity check locally so they keep their
+  clock, and their energy reporting, without internet access.
+url: https://github.com/lukebiddell/ha-samsung-clock-responder
+arch:
+  - aarch64
+  - amd64
+startup: services
+boot: auto
+init: false
+watchdog: tcp://[HOST]:[PORT:80]
+ports:
+  80/tcp: 80
+options:
+  log_requests: true
+schema:
+  log_requests: bool

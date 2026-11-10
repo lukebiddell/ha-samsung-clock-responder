@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Add-on lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: frenck/action-addon-linter@v2
+        with:
+          path: ./samsung_clock_responder
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python -m unittest discover -s tests -v
+
+  build:
+    name: Build ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+          - arch: aarch64
+            platform: linux/arm64
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - name: Read base image
+        id: base
+        run: |
+          echo "image=$(python3 -c "import re,sys; t=open('samsung_clock_responder/build.yaml').read(); print(re.search(r'${{ matrix.arch }}: (\S+)', t).group(1))")" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v7
+        with:
+          context: samsung_clock_responder
+          platforms: ${{ matrix.platform }}
+          build-args: BUILD_FROM=${{ steps.base.outputs.image }}
+          push: false
+          load: true
+          tags: samsung-clock-responder:test
+      - name: Smoke test
+        run: |
+          docker run -d --name responder --platform ${{ matrix.platform }} -p 8080:80 samsung-clock-responder:test
+          for i in $(seq 1 20); do
+            curl -sf -o /dev/null -H 'Host: info.cspserver.net' http://127.0.0.1:8080/api/v1/connect-test && break
+            sleep 1
+          done
+          curl -si -H 'Host: info.cspserver.net' http://127.0.0.1:8080/api/v1/connect-test | tee response.txt
+          grep -q '^HTTP/1.1 200 OK' response.txt
+          docker logs responder
